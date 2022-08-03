@@ -11,22 +11,22 @@ type tbl interface {
 	TableName() string
 }
 
-type table[T tbl] struct {
+type Tbl[T tbl] struct {
 	name string
 	db   *sql.DB
 }
 
-func Table[T tbl](db *sql.DB) *table[T] {
+func Table[T tbl](db *sql.DB) *Tbl[T] {
 	var t T
 
-	return &table[T]{name: t.TableName(), db: db}
+	return &Tbl[T]{name: t.TableName(), db: db}
 }
 
-func (c *table[T]) BuildSchema() *schema {
+func (c *Tbl[T]) BuildSchema() *schema {
 	return newSchemaBuilder(c.db, c.name)
 }
 
-func (c *table[T]) Insert(data T, opts ...*options.Insert) error {
+func (c *Tbl[T]) Insert(data T, opts ...*options.Insert) error {
 	m, err := dataToMap(data)
 	if err != nil {
 		return err
@@ -48,25 +48,25 @@ func (c *table[T]) Insert(data T, opts ...*options.Insert) error {
 	return err
 }
 
-func (c *table[T]) Query(fn func(builder *Builder)) *query[T] {
+func (c *Tbl[T]) Query(fn func(builder *Builder)) *query[T] {
 	return newQuery[T](c.db, fn)
 }
 
-func (c *table[T]) DropTable() (err error) {
+func (c *Tbl[T]) DropTable() (err error) {
 	var t T
 	str := fmt.Sprintf("DROP TABLE %s", t.TableName())
 	_, err = c.db.Exec(str)
 	return err
 }
 
-func (c *table[T]) DropTableIfExists() (err error) {
+func (c *Tbl[T]) DropTableIfExists() (err error) {
 	var t T
 	str := fmt.Sprintf("DROP TABLE %s IF EXISTS", t.TableName())
 	_, err = c.db.Exec(str)
 	return err
 }
 
-func (c *table[T]) mapToInsertQuery(m map[string]interface{}, ignoredFields ...string) (columnNames string, placeHolders string, values []interface{}) {
+func (c *Tbl[T]) mapToInsertQuery(m map[string]interface{}, ignoredFields ...string) (columnNames string, placeHolders string, values []interface{}) {
 	isFieldIgnored := func(theField string) bool {
 		if len(ignoredFields) == 0 {
 			return false
