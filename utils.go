@@ -1,4 +1,4 @@
-package elegent
+package elegant
 
 import (
 	"encoding/json"
