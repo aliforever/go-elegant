@@ -30,15 +30,13 @@ func TestNewCreateTable(t *testing.T) {
 	// ----------------------------------------------------------------------------------
 	tbl := Table[users](db)
 
-	err = tbl.DropTable()
-
 	err = tbl.BuildSchema().
 		AddColumn(columns.NewInteger("id").PrimaryKey().Identity()).
 		AddColumn(columns.NewVarchar("first_name", 20).NotNull()).
 		AddColumn(columns.NewVarchar("last_name", 20).NotNull()).
 		AddColumn(columns.NewTimestamp("created_at").NotNull().Default("now()")).
 		AddColumn(columns.NewInteger("age").NotNull().Default("18")).
-		Build()
+		Build(true)
 
 	if err != nil {
 		panic(err)
