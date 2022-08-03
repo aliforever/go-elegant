@@ -59,6 +59,13 @@ func (c *table[T]) DropTable() (err error) {
 	return err
 }
 
+func (c *table[T]) DropTableIfExists() (err error) {
+	var t T
+	str := fmt.Sprintf("DROP TABLE %s IF EXISTS", t.TableName())
+	_, err = c.db.Exec(str)
+	return err
+}
+
 func (c *table[T]) mapToInsertQuery(m map[string]interface{}, ignoredFields ...string) (columnNames string, placeHolders string, values []interface{}) {
 	isFieldIgnored := func(theField string) bool {
 		if len(ignoredFields) == 0 {

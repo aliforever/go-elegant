@@ -36,7 +36,7 @@ func TestNewCreateTable(t *testing.T) {
 		AddColumn(columns.NewInteger("id").PrimaryKey().Identity()).
 		AddColumn(columns.NewVarchar("first_name", 20).NotNull()).
 		AddColumn(columns.NewVarchar("last_name", 20).NotNull()).
-		AddColumn(columns.NewDate("created_at").NotNull().Default(time.Now().Format("2006-01-02 15:04:05"))).
+		AddColumn(columns.NewTimestamp("created_at").NotNull().Default("now()")).
 		AddColumn(columns.NewInteger("age").NotNull().Default("18")).
 		Build()
 
