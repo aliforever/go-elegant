@@ -14,4 +14,9 @@ const (
 
 	TypeReal   dataType = "REAL"             //	4 bytes [6 decimal digits precision]
 	TypeDouble dataType = "DOUBLE PRECISION" // 8 bytes [15 decimal digits precision]
+
+	TypeDate                     dataType = "DATE"                       // 4 bytes - YYYY-MM-DD
+	TypeTimestamp                dataType = "TIMESTAMP"                  // 8 bytes - YYYY-MM-DD HH:MM:SS
+	TypeTimestampWithoutTimezone dataType = "TIMESTAMP WITHOUT TIMEZONE" // 8 bytes - YYYY-MM-DD HH:MM:SS
+	TypeTimestampWithTimezone    dataType = "TIMESTAMP WITH TIMEZONE"    // 8 bytes - YYYY-MM-DD HH:MM:SS-TZ
 )

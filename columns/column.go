@@ -17,6 +17,7 @@ type Column[T DataType] struct {
 	isIdentity     bool
 	notNull        bool
 	unique         bool
+	defaultValue   any
 	referredTable  string
 	referredColumn string
 }
@@ -45,6 +46,11 @@ func (c *Column[T]) Unique() *Column[T] {
 	return c
 }
 
+func (c *Column[T]) Default(val any) *Column[T] {
+	c.defaultValue = val
+	return c
+}
+
 func (c *Column[T]) ForeignKey(sourceTable, column string) *Column[T] {
 	c.referredTable = sourceTable
 	c.referredColumn = column
@@ -64,6 +70,9 @@ func (c Column[T]) Builder() string {
 	}
 	if c.isIdentity {
 		query += " GENERATED ALWAYS AS IDENTITY"
+	}
+	if c.defaultValue != nil {
+		query += " DEFAULT " + fmt.Sprint("'", c.defaultValue, "'")
 	}
 
 	return query

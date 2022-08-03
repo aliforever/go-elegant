@@ -7,12 +7,14 @@ import (
 	"github.com/aliforever/go-elegant/options"
 	_ "github.com/lib/pq"
 	"testing"
+	"time"
 )
 
 type users struct {
-	Id        int64  `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
+	Id        int64      `json:"id"`
+	FirstName string     `json:"first_name"`
+	LastName  string     `json:"last_name"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
 func (users) TableName() string {
@@ -34,12 +36,19 @@ func TestNewCreateTable(t *testing.T) {
 		AddColumn(columns.NewInteger("id").PrimaryKey().Identity()).
 		AddColumn(columns.NewVarchar("first_name", 20).NotNull()).
 		AddColumn(columns.NewVarchar("last_name", 20).NotNull()).
+		AddColumn(columns.NewDate("created_at").NotNull().Default(time.Now().Format("2006-01-02 15:04:05"))).
+		AddColumn(columns.NewInteger("age").NotNull().Default("18")).
 		Build()
+
+	if err != nil {
+		panic(err)
+	}
+	// n := time.Now()
 
 	err = tbl.Insert(users{
 		FirstName: "Ali",
 		LastName:  "Dehkharghani",
-	}, options.NewInsert().IgnoreFields("id"))
+	}, options.NewInsert().IgnoreFields("id", "created_at"))
 	if err != nil {
 		panic(err)
 	}
@@ -47,7 +56,7 @@ func TestNewCreateTable(t *testing.T) {
 	err = tbl.Insert(users{
 		FirstName: "Hamed",
 		LastName:  "Mehrara",
-	}, options.NewInsert().IgnoreFields("id"))
+	}, options.NewInsert().IgnoreFields("id", "created_at"))
 	if err != nil {
 		panic(err)
 	}
