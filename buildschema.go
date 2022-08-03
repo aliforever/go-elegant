@@ -2,8 +2,8 @@ package elegent
 
 import (
 	"database/sql"
-	"elegent/columns"
 	"fmt"
+	"github.com/aliforever/go-elegant/columns"
 	"strings"
 )
 

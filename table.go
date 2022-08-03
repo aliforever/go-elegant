@@ -2,8 +2,8 @@ package elegent
 
 import (
 	"database/sql"
-	"elegent/options"
 	"fmt"
+	"github.com/aliforever/go-elegant/options"
 	"strings"
 )
 

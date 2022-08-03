@@ -2,9 +2,9 @@ package elegent
 
 import (
 	"database/sql"
-	"elegent/columns"
-	"elegent/options"
 	"fmt"
+	"github.com/aliforever/go-elegant/columns"
+	"github.com/aliforever/go-elegant/options"
 	_ "github.com/lib/pq"
 	"testing"
 )

@@ -1,4 +1,4 @@
-module elegent
+module github.com/aliforever/go-elegant
 
 go 1.18
 
