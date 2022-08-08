@@ -74,6 +74,9 @@ func (c Column[T]) Builder() string {
 	if c.defaultValue != nil {
 		query += " DEFAULT " + fmt.Sprint("'", c.defaultValue, "'")
 	}
+	if c.referredTable != "" && c.referredColumn != "" {
+		query += fmt.Sprintf(" REFERENCES %s(%s)", c.referredTable, c.referredColumn)
+	}
 
 	return query
 }
