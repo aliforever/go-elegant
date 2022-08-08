@@ -21,6 +21,14 @@ func (users) TableName() string {
 	return "users"
 }
 
+type books struct {
+	Id string `json:"id"`
+}
+
+func (books) TableName() string {
+	return "books"
+}
+
 func TestNewCreateTable(t *testing.T) {
 	db, err := sql.Open("postgres", "user=postgres password=root sslmode=disable database=testapp")
 	if err != nil {
@@ -38,23 +46,40 @@ func TestNewCreateTable(t *testing.T) {
 		AddColumn(columns.NewInteger("age").NotNull().Default("18")).
 		Build(true)
 
+	tbl2 := Table[books](db)
+
+	err = tbl2.BuildSchema().
+		AddColumn(columns.NewText("id").PrimaryKey()).
+		Build(true)
+
 	if err != nil {
 		panic(err)
 	}
 	// n := time.Now()
 
-	err = tbl.Insert(users{
+	u, err := tbl.Insert(users{
 		FirstName: "Ali",
 		LastName:  "Dehkharghani",
 	}, options.NewInsert().IgnoreFields("id", "created_at"))
 	if err != nil {
 		panic(err)
+	} else {
+		fmt.Println(u.Id)
 	}
 
-	err = tbl.Insert(users{
+	u, err = tbl.Insert(users{
 		FirstName: "Hamed",
 		LastName:  "Mehrara",
 	}, options.NewInsert().IgnoreFields("id", "created_at"))
+	if err != nil {
+		panic(err)
+	} else {
+		fmt.Println("user_id", u.Id)
+	}
+
+	_, err = tbl2.Insert(books{
+		Id: "tesssting",
+	}, options.NewInsert().IgnoreFields("created_at"))
 	if err != nil {
 		panic(err)
 	}

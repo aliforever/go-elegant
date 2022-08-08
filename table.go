@@ -2,6 +2,7 @@ package elegant
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"github.com/aliforever/go-elegant/options"
 	"strings"
@@ -26,10 +27,10 @@ func (c *Tbl[T]) BuildSchema() *schema {
 	return newSchemaBuilder(c.db, c.name)
 }
 
-func (c *Tbl[T]) Insert(data T, opts ...*options.Insert) error {
+func (c *Tbl[T]) Insert(data T, opts ...*options.Insert) (*T, error) {
 	m, err := dataToMap(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	ignoredFields := []string{}
@@ -41,11 +42,24 @@ func (c *Tbl[T]) Insert(data T, opts ...*options.Insert) error {
 
 	var t T
 
-	query := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s)`, t.TableName(), columnNames, placeHolders)
+	// TODO: Returning Id is only valid for postgresql
+	//		This should be changed
+	query := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s) RETURNING id`, t.TableName(), columnNames, placeHolders)
 
-	_, err = c.db.Exec(query, values...)
+	var id interface{}
+	err = c.db.QueryRow(query, values...).Scan(&id)
+	if err != nil {
+		return nil, err
+	}
 
-	return err
+	j, err := json.Marshal(map[string]interface{}{"id": id})
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(j, &data)
+
+	return &data, err
 }
 
 func (c *Tbl[T]) Query(fn func(builder *Builder)) *query[T] {
