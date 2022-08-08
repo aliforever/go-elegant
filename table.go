@@ -52,6 +52,7 @@ func (c *Tbl[T]) Query(fn func(builder *Builder)) *query[T] {
 	return newQuery[T](c.db, fn)
 }
 
+// DropTable TODO: Separate to its own builder because it has many attributes
 func (c *Tbl[T]) DropTable() (err error) {
 	var t T
 	str := fmt.Sprintf("DROP TABLE %s", t.TableName())
@@ -62,6 +63,13 @@ func (c *Tbl[T]) DropTable() (err error) {
 func (c *Tbl[T]) DropTableIfExists() (err error) {
 	var t T
 	str := fmt.Sprintf("DROP TABLE %s IF EXISTS", t.TableName())
+	_, err = c.db.Exec(str)
+	return err
+}
+
+func (c *Tbl[T]) DropTableIfExistsCascade() (err error) {
+	var t T
+	str := fmt.Sprintf("DROP TABLE %s IF EXISTS CASCADE", t.TableName())
 	_, err = c.db.Exec(str)
 	return err
 }
