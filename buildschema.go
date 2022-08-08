@@ -37,7 +37,7 @@ func (s *schema) tableData() string {
 func (s *schema) Build(dropIfExists bool) error {
 	str := fmt.Sprintf("CREATE TABLE %s (%s)", s.tableName, s.tableData())
 	if dropIfExists {
-		str = fmt.Sprintf("DROP TABLE IF EXISTS %s; ", s.tableName) + str
+		str = fmt.Sprintf("DROP TABLE IF EXISTS %s CASCADE; ", s.tableName) + str
 	}
 	_, err := s.db.Exec(str)
 	return err
