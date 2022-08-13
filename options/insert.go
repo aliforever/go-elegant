@@ -1,14 +1,14 @@
 package options
 
-type Insert struct {
+type InsertOptions struct {
 	IgnoredFields []string
 }
 
-func NewInsert() *Insert {
-	return &Insert{}
+func Insert() *InsertOptions {
+	return &InsertOptions{}
 }
 
-func (i *Insert) IgnoreFields(fields ...string) *Insert {
+func (i *InsertOptions) IgnoreFields(fields ...string) *InsertOptions {
 	i.IgnoredFields = append(i.IgnoredFields, fields...)
 	return i
 }

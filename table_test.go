@@ -36,7 +36,7 @@ func TestNewCreateTable(t *testing.T) {
 	}
 
 	// ----------------------------------------------------------------------------------
-	tbl := Table[users](db)
+	tbl := Table[users](db, options.Table().SetInsertOptions(options.Insert().IgnoreFields("id", "created_at")))
 
 	err = tbl.BuildSchema().
 		AddColumn(columns.NewInteger("id").PrimaryKey().Identity()).
@@ -60,7 +60,7 @@ func TestNewCreateTable(t *testing.T) {
 	u, err := tbl.Insert(users{
 		FirstName: "Ali",
 		LastName:  "Dehkharghani",
-	}, options.NewInsert().IgnoreFields("id", "created_at"))
+	})
 	if err != nil {
 		panic(err)
 	} else {
@@ -70,7 +70,7 @@ func TestNewCreateTable(t *testing.T) {
 	u, err = tbl.Insert(users{
 		FirstName: "Hamed",
 		LastName:  "Mehrara",
-	}, options.NewInsert().IgnoreFields("id", "created_at"))
+	})
 	if err != nil {
 		panic(err)
 	} else {
@@ -79,7 +79,7 @@ func TestNewCreateTable(t *testing.T) {
 
 	_, err = tbl2.Insert(books{
 		Id: "tesssting",
-	}, options.NewInsert().IgnoreFields("created_at"))
+	})
 	if err != nil {
 		panic(err)
 	}

@@ -13,28 +13,43 @@ type tbl interface {
 }
 
 type Tbl[T tbl] struct {
-	name string
-	db   *sql.DB
+	name    string
+	db      *sql.DB
+	options *options.TableOptions
 }
 
-func Table[T tbl](db *sql.DB) *Tbl[T] {
+func Table[T tbl](db *sql.DB, options ...*options.TableOptions) *Tbl[T] {
 	var t T
 
-	return &Tbl[T]{name: t.TableName(), db: db}
+	tbl := &Tbl[T]{name: t.TableName(), db: db}
+
+	if len(options) != 0 {
+		tbl.options = options[0]
+	}
+
+	return tbl
 }
 
 func (c *Tbl[T]) BuildSchema() *schema {
 	return newSchemaBuilder(c.db, c.name)
 }
 
-func (c *Tbl[T]) Insert(data T, opts ...*options.Insert) (*T, error) {
+func (c *Tbl[T]) Insert(data T, opts ...*options.InsertOptions) (*T, error) {
 	m, err := dataToMap(data)
 	if err != nil {
 		return nil, err
 	}
 
 	ignoredFields := []string{}
+
+	var insOptions *options.InsertOptions
 	if len(opts) > 0 {
+		insOptions = opts[0]
+	} else if c.options != nil {
+		insOptions = c.options.InsertOptions
+	}
+
+	if insOptions != nil {
 		ignoredFields = opts[0].IgnoredFields
 	}
 

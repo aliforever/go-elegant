@@ -32,6 +32,13 @@ func (users) TableName() string {
 tbl := Table[users](db)
 ```
 
+- If you want to pass default options for the table, pass it as the second argument:
+
+    As an example, to always ignore `id` field when inserting data (when Id is of type autoincrement):
+```go
+tbl := Table[users](db, options.Table().SetInsertOptions(options.Insert().IgnoreFields("id")))
+```
+
 - Drop the table:
 ```go
 err := tbl.DropTable()
@@ -57,12 +64,11 @@ if err != nil {
 err = tbl.Insert(users{
     FirstName: "Ali",
     LastName:  "Error",
-}, options.NewInsert().IgnoreFields("id"))
+}, options.Insert().IgnoreFields("id"))
 if err != nil {
     panic(err)
 }
 ```
-
 - Read one row from the table:
 ```go
 data, err := tbl.Query(func(builder *Builder) {
