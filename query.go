@@ -41,7 +41,6 @@ func (q *query[T]) FindOne() (data *T, err error) {
 	}
 
 	query := fmt.Sprintf("SELECT %s FROM %s WHERE %s", strings.Join(fields, ","), q.tableName, q.queryBuilder.builder.String())
-	fmt.Println(query)
 	r := q.db.QueryRow(query, q.queryBuilder.values...)
 	if r.Err() != nil {
 		return nil, r.Err()
