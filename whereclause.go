@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-type whereClause struct {
+type WhereClause struct {
 	builder       *strings.Builder
 	placeHolderFn func() int
 	addValueFn    func(interface{})
@@ -14,34 +14,50 @@ type whereClause struct {
 	val           interface{}
 }
 
-func newWhereClause(builder *strings.Builder, placeHolderFn func() int, addValueFn func(val interface{}), field, operand string, val interface{}) *whereClause {
-	_, _ = builder.WriteString(fmt.Sprintf("%s %s $%d", field, operand, placeHolderFn()))
-	return &whereClause{builder: builder, field: field, operand: operand, val: val, addValueFn: addValueFn}
+func newWhereClause(builder *strings.Builder, placeHolderFn func() int, addValueFn func(val interface{}), field, operand string, val interface{}) *WhereClause {
+	_, _ = builder.WriteString(fmt.Sprintf("%s %s", field, operand))
+	if placeHolderFn != nil {
+		_, _ = builder.WriteString(fmt.Sprintf(" $%d", placeHolderFn()))
+	}
+
+	return &WhereClause{builder: builder, field: field, operand: operand, val: val, addValueFn: addValueFn, placeHolderFn: placeHolderFn}
 }
 
-func (w *whereClause) And(field, operand string, val interface{}) *whereClause {
-	_, _ = w.builder.WriteString(fmt.Sprintf(" AND %s %s $%d", field, operand, w.placeHolderFn()))
+func (w *WhereClause) And(field, operand string, val interface{}) *WhereClause {
+	_, _ = w.builder.WriteString(fmt.Sprintf(" AND %s %s", field, operand))
+
+	if w.placeHolderFn != nil {
+		_, _ = w.builder.WriteString(fmt.Sprintf(" $%d", w.placeHolderFn()))
+	}
+
 	w.addValueFn(val)
+
 	return w
 }
 
-func (w *whereClause) Or(field, operand string, val interface{}) *whereClause {
-	_, _ = w.builder.WriteString(fmt.Sprintf(" OR %s %s $%d", field, operand, w.placeHolderFn()))
+func (w *WhereClause) Or(field, operand string, val interface{}) *WhereClause {
+	_, _ = w.builder.WriteString(fmt.Sprintf(" OR %s %s", field, operand))
+
+	if w.placeHolderFn != nil {
+		_, _ = w.builder.WriteString(fmt.Sprintf(" $%d", w.placeHolderFn()))
+	}
+
 	w.addValueFn(val)
+
 	return w
 }
 
-func (w *whereClause) OrGroup(field, operand string, val interface{}, fn func(qb *whereClause)) *whereClause {
+func (w *WhereClause) OrGroup(field, operand string, val interface{}, fn func(qb *WhereClause)) *WhereClause {
 	w.group("OR", field, operand, val, fn)
 	return w
 }
 
-func (w *whereClause) AndGroup(field, operand string, val interface{}, fn func(qb *whereClause)) *whereClause {
+func (w *WhereClause) AndGroup(field, operand string, val interface{}, fn func(qb *WhereClause)) *WhereClause {
 	w.group("AND", field, operand, val, fn)
 	return w
 }
 
-func (w *whereClause) group(keyword, field, operand string, val interface{}, fn func(qb *whereClause)) *whereClause {
+func (w *WhereClause) group(keyword, field, operand string, val interface{}, fn func(qb *WhereClause)) *WhereClause {
 	w.builder.WriteString(fmt.Sprintf(" %s (", keyword))
 
 	wc := newWhereClause(w.builder, w.placeHolderFn, w.addValueFn, field, operand, val)

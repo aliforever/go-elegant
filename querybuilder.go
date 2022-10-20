@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-type Builder struct {
+type QueryBuilder struct {
 	tableName string
 
 	builder *strings.Builder
@@ -16,24 +16,24 @@ type Builder struct {
 	values []interface{}
 }
 
-func newBuilder(tblName string) *Builder {
-	return &Builder{
+func newBuilder(tblName string) *QueryBuilder {
+	return &QueryBuilder{
 		builder:          &strings.Builder{},
 		placeHolderIndex: 0,
 		tableName:        tblName,
 	}
 }
 
-func (q *Builder) Where(fieldName, operand string, value interface{}) *whereClause {
+func (q *QueryBuilder) Where(fieldName, operand string, value interface{}) *WhereClause {
 	q.values = append(q.values, value)
 	return newWhereClause(q.builder, q.newPlaceHolder, q.addValue, fieldName, operand, value)
 }
 
-func (q *Builder) addValue(val interface{}) {
+func (q *QueryBuilder) addValue(val interface{}) {
 	q.values = append(q.values, val)
 }
 
-func (q *Builder) newPlaceHolder() int {
+func (q *QueryBuilder) newPlaceHolder() int {
 	q.placeHolderIndexMutex.Lock()
 	defer q.placeHolderIndexMutex.Unlock()
 

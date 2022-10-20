@@ -77,7 +77,7 @@ func (c *Tbl[T]) Insert(data T, opts ...*options.InsertOptions) (*T, error) {
 	return &data, err
 }
 
-func (c *Tbl[T]) Query(fn func(builder *Builder)) *query[T] {
+func (c *Tbl[T]) Query(fn func(builder *QueryBuilder)) *query[T] {
 	return newQuery[T](c.db, fn)
 }
 

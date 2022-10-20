@@ -3,7 +3,6 @@ package elegant
 import (
 	"database/sql"
 	"fmt"
-	"github.com/aliforever/go-elegant/columns"
 	"github.com/aliforever/go-elegant/options"
 	_ "github.com/lib/pq"
 	"testing"
@@ -38,54 +37,56 @@ func TestNewCreateTable(t *testing.T) {
 	// ----------------------------------------------------------------------------------
 	tbl := Table[users](db, options.Table().SetInsertOptions(options.Insert().IgnoreFields("id", "created_at")))
 
-	err = tbl.BuildSchema().
-		AddColumn(columns.NewInteger("id").PrimaryKey().Identity()).
-		AddColumn(columns.NewVarchar("first_name", 20).NotNull()).
-		AddColumn(columns.NewVarchar("last_name", 20).NotNull()).
-		AddColumn(columns.NewTimestamp("created_at").NotNull().Default("now()")).
-		AddColumn(columns.NewInteger("age").NotNull().Default("18")).
-		Build(true)
+	// err = tbl.BuildSchema().
+	// 	AddColumn(columns.NewInteger("id").PrimaryKey().Identity()).
+	// 	AddColumn(columns.NewVarchar("first_name", 20).NotNull()).
+	// 	AddColumn(columns.NewVarchar("last_name", 20).NotNull()).
+	// 	AddColumn(columns.NewTimestamp("created_at").NotNull().Default("now()")).
+	// 	AddColumn(columns.NewInteger("age").NotNull().Default("18")).
+	// 	Build(true)
+	//
+	// tbl2 := Table[books](db)
+	//
+	// err = tbl2.BuildSchema().
+	// 	AddColumn(columns.NewText("id").PrimaryKey()).
+	// 	Build(true)
+	//
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// // n := time.Now()
+	//
+	// u, err := tbl.Insert(users{
+	// 	FirstName: "Ali",
+	// 	LastName:  "Dehkharghani",
+	// })
+	// if err != nil {
+	// 	panic(err)
+	// } else {
+	// 	fmt.Println(u.Id)
+	// }
+	//
+	// u, err = tbl.Insert(users{
+	// 	FirstName: "Hamed",
+	// 	LastName:  "Mehrara",
+	// })
+	// if err != nil {
+	// 	panic(err)
+	// } else {
+	// 	fmt.Println("user_id", u.Id)
+	// }
+	//
+	// _, err = tbl2.Insert(books{
+	// 	Id: "tesssting",
+	// })
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	tbl2 := Table[books](db)
-
-	err = tbl2.BuildSchema().
-		AddColumn(columns.NewText("id").PrimaryKey()).
-		Build(true)
-
-	if err != nil {
-		panic(err)
-	}
-	// n := time.Now()
-
-	u, err := tbl.Insert(users{
-		FirstName: "Ali",
-		LastName:  "Dehkharghani",
-	})
-	if err != nil {
-		panic(err)
-	} else {
-		fmt.Println(u.Id)
-	}
-
-	u, err = tbl.Insert(users{
-		FirstName: "Hamed",
-		LastName:  "Mehrara",
-	})
-	if err != nil {
-		panic(err)
-	} else {
-		fmt.Println("user_id", u.Id)
-	}
-
-	_, err = tbl2.Insert(books{
-		Id: "tesssting",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	data, err := tbl.Query(func(builder *Builder) {
-		builder.Where("first_name", "=", "Ali")
+	data, err := tbl.Query(func(builder *QueryBuilder) {
+		builder.Where("first_name", "=", "Ali").AndGroup("last_name", "=", "Hamed", func(qb *WhereClause) {
+			qb.And("first_name", "=", "H")
+		})
 	}).FindOne()
 	if err != nil {
 		panic(err)

@@ -15,10 +15,10 @@ type query[T tbl] struct {
 	db        *sql.DB
 	tableName string
 
-	queryBuilder *Builder
+	queryBuilder *QueryBuilder
 }
 
-func newQuery[T tbl](db *sql.DB, fn func(builder *Builder)) *query[T] {
+func newQuery[T tbl](db *sql.DB, fn func(builder *QueryBuilder)) *query[T] {
 	var t T
 
 	q := newBuilder(t.TableName())
@@ -41,7 +41,7 @@ func (q *query[T]) FindOne() (data *T, err error) {
 	}
 
 	query := fmt.Sprintf("SELECT %s FROM %s WHERE %s", strings.Join(fields, ","), q.tableName, q.queryBuilder.builder.String())
-
+	fmt.Println(query)
 	r := q.db.QueryRow(query, q.queryBuilder.values...)
 	if r.Err() != nil {
 		return nil, r.Err()
