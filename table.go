@@ -30,8 +30,12 @@ func Table[T tbl](db *sql.DB, options ...*options.TableOptions) *Tbl[T] {
 	return tbl
 }
 
-func (c *Tbl[T]) BuildSchema() *schema {
-	return newSchemaBuilder(c.db, c.name)
+func (c *Tbl[T]) BuildSchema() *buildSchema {
+	return newBuildSchemaBuilder(c.db, c.name)
+}
+
+func (c *Tbl[T]) AlterSchema() *AlterSchema {
+	return newAlterSchemaBuilder(c.db, c.name)
 }
 
 func (c *Tbl[T]) Insert(data T, opts ...*options.InsertOptions) (*T, error) {

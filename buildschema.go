@@ -7,24 +7,31 @@ import (
 	"strings"
 )
 
-type schema struct {
+type buildSchema struct {
 	db        *sql.DB
 	tableName string
 
-	columns []columns.DataType
+	columns      []columns.DataType
+	dropIfExists bool
 }
 
-func newSchemaBuilder(db *sql.DB, tableName string) *schema {
-	return &schema{db: db, tableName: tableName}
+func newBuildSchemaBuilder(db *sql.DB, tableName string) *buildSchema {
+	return &buildSchema{db: db, tableName: tableName}
 }
 
-func (s *schema) AddColumn(column columns.DataType) *schema {
+func (s *buildSchema) DropTableIfExist() *buildSchema {
+	s.dropIfExists = true
+
+	return s
+}
+
+func (s *buildSchema) AddColumn(column columns.DataType) *buildSchema {
 	s.columns = append(s.columns, column)
 
 	return s
 }
 
-func (s *schema) tableData() string {
+func (s *buildSchema) tableData() string {
 	var strs []string
 
 	for _, column := range s.columns {
@@ -34,9 +41,9 @@ func (s *schema) tableData() string {
 	return strings.Join(strs, ",")
 }
 
-func (s *schema) Build(dropIfExists bool) error {
+func (s *buildSchema) Build() error {
 	str := fmt.Sprintf("CREATE TABLE %s (%s)", s.tableName, s.tableData())
-	if dropIfExists {
+	if s.dropIfExists {
 		str = fmt.Sprintf("DROP TABLE IF EXISTS %s CASCADE; ", s.tableName) + str
 	}
 	_, err := s.db.Exec(str)
