@@ -58,6 +58,8 @@ func (w *WhereClause) AndGroup(field, operand string, val interface{}, fn func(q
 }
 
 func (w *WhereClause) group(keyword, field, operand string, val interface{}, fn func(qb *WhereClause)) *WhereClause {
+	w.addValueFn(val)
+
 	w.builder.WriteString(fmt.Sprintf(" %s (", keyword))
 
 	wc := newWhereClause(w.builder, w.placeHolderFn, w.addValueFn, field, operand, val)
@@ -65,8 +67,6 @@ func (w *WhereClause) group(keyword, field, operand string, val interface{}, fn 
 	fn(wc)
 
 	wc.builder.WriteString(")")
-
-	w.addValueFn(val)
 
 	return w
 }
