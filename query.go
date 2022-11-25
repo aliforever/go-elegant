@@ -11,11 +11,16 @@ type scanner interface {
 	Scan(dest ...any) error
 }
 
+type queryBuilder interface {
+	Query() string
+	Values() []interface{}
+}
+
 type query[T tbl] struct {
 	db        *sql.DB
 	tableName string
 
-	queryBuilder *QueryBuilder
+	queryBuilder queryBuilder
 }
 
 func newQuery[T tbl](db *sql.DB, fn func(builder *QueryBuilder)) *query[T] {
@@ -34,14 +39,30 @@ func newQuery[T tbl](db *sql.DB, fn func(builder *QueryBuilder)) *query[T] {
 	}
 }
 
+func newRawQuery[T tbl](db *sql.DB, querySql string, values ...interface{}) *query[T] {
+	var t T
+
+	q := newRawBuilder(t.TableName(), querySql, values)
+
+	return &query[T]{
+		db:           db,
+		tableName:    t.TableName(),
+		queryBuilder: q,
+	}
+}
+
+func (q *query[T]) Query() (string, []interface{}) {
+	return q.queryBuilder.Query(), q.queryBuilder.Values()
+}
+
 func (q *query[T]) FindOne() (data *T, err error) {
 	fields, err := q.fields()
 	if err != nil {
 		return nil, err
 	}
 
-	query := fmt.Sprintf("SELECT %s FROM %s WHERE %s", strings.Join(fields, ","), q.tableName, q.queryBuilder.builder.String())
-	r := q.db.QueryRow(query, q.queryBuilder.values...)
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE %s", strings.Join(fields, ","), q.tableName, q.queryBuilder.Query())
+	r := q.db.QueryRow(query, q.queryBuilder.Values()...)
 	if r.Err() != nil {
 		return nil, r.Err()
 	}
@@ -57,11 +78,11 @@ func (q *query[T]) Find() (data []T, err error) {
 
 	query := fmt.Sprintf("SELECT %s FROM %s", strings.Join(fields, ","), q.tableName)
 
-	if q.queryBuilder.builder != nil && q.queryBuilder.builder.String() != "" {
-		query += fmt.Sprintf(" WHERE %s", q.queryBuilder.builder.String())
+	if q.queryBuilder != nil && q.queryBuilder.Query() != "" {
+		query += fmt.Sprintf(" WHERE %s", q.queryBuilder.Query())
 	}
 
-	cur, err := q.db.Query(query, q.queryBuilder.values...)
+	cur, err := q.db.Query(query, q.queryBuilder.Values()...)
 	if err != nil {
 		return nil, err
 	}

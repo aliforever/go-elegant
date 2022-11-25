@@ -24,9 +24,9 @@ func newBuilder(tblName string) *QueryBuilder {
 	}
 }
 
-func (q *QueryBuilder) Where(fieldName, operand string, value interface{}) *WhereClause {
+func (q *QueryBuilder) Where(fieldName, operator string, value interface{}) *WhereClause {
 	q.values = append(q.values, value)
-	return newWhereClause(q.builder, q.newPlaceHolder, q.addValue, fieldName, operand, value)
+	return newWhereClause(q.builder, q.newPlaceHolder, q.addValue, fieldName, operator, value)
 }
 
 func (q *QueryBuilder) addValue(val interface{}) {
@@ -40,4 +40,12 @@ func (q *QueryBuilder) newPlaceHolder() int {
 	q.placeHolderIndex++
 
 	return q.placeHolderIndex
+}
+
+func (q *QueryBuilder) Query() string {
+	return q.builder.String()
+}
+
+func (q *QueryBuilder) Values() []interface{} {
+	return q.values
 }

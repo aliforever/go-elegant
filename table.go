@@ -85,6 +85,10 @@ func (c *Tbl[T]) Query(fn func(builder *QueryBuilder)) *query[T] {
 	return newQuery[T](c.db, fn)
 }
 
+func (c *Tbl[T]) QueryRaw(querySql string, placeHolders ...interface{}) *query[T] {
+	return newRawQuery[T](c.db, querySql, placeHolders...)
+}
+
 // DropTable TODO: Separate to its own builder because it has many attributes
 func (c *Tbl[T]) DropTable() (err error) {
 	var t T
