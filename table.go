@@ -54,7 +54,7 @@ func (c *Tbl[T]) Insert(data T, opts ...*options.InsertOptions) (*T, error) {
 	}
 
 	if insOptions != nil {
-		ignoredFields = opts[0].IgnoredFields
+		ignoredFields = insOptions.IgnoredFields
 	}
 
 	columnNames, placeHolders, values := c.mapToInsertQuery(m, ignoredFields...)
@@ -79,6 +79,48 @@ func (c *Tbl[T]) Insert(data T, opts ...*options.InsertOptions) (*T, error) {
 	err = json.Unmarshal(j, &data)
 
 	return &data, err
+}
+
+func (c *Tbl[T]) UpdateByID(id interface{}, data T, opts ...*options.UpdateOptions) (err error) {
+	m, err := dataToMap(data)
+	if err != nil {
+		return err
+	}
+
+	idColumn := "id"
+
+	if c.options != nil && c.options.PrimaryIDColumnName != "" {
+		idColumn = c.options.PrimaryIDColumnName
+	}
+
+	ignoredFields := []string{}
+	var updOptions *options.UpdateOptions
+	if len(opts) > 0 {
+		updOptions = opts[0]
+	} else if c.options != nil {
+		updOptions = c.options.UpdateOptions
+	}
+
+	if updOptions != nil {
+		ignoredFields = updOptions.IgnoredFields
+	}
+
+	ignoredFields = append(ignoredFields, idColumn)
+
+	columnNames, lastPlaceHolderID, values := c.mapToUpdateQuery(m, ignoredFields...)
+
+	var t T
+
+	query := fmt.Sprintf(`UPDATE %s SET %s WHERE %s=$%d`, t.TableName(), columnNames, idColumn, lastPlaceHolderID)
+
+	values = append(values, id)
+
+	_, err = c.db.Exec(query, values...)
+	if err != nil {
+		return err
+	}
+
+	return err
 }
 
 func (c *Tbl[T]) Query(fn func(builder *QueryBuilder)) *query[T] {
@@ -140,4 +182,32 @@ func (c *Tbl[T]) mapToInsertQuery(m map[string]interface{}, ignoredFields ...str
 	}
 
 	return strings.Join(cNames, ","), strings.Join(ps, ","), values
+}
+
+func (c *Tbl[T]) mapToUpdateQuery(m map[string]interface{}, ignoredFields ...string) (columnNames string, lastPlaceHolderID int, values []interface{}) {
+	isFieldIgnored := func(theField string) bool {
+		if len(ignoredFields) == 0 {
+			return false
+		}
+		for _, field := range ignoredFields {
+			if strings.ToLower(field) == strings.ToLower(theField) {
+				return true
+			}
+		}
+		return false
+	}
+
+	cNames := []string{}
+
+	lastPlaceHolderID = 1
+	for key, val := range m {
+		if isFieldIgnored(key) {
+			continue
+		}
+		cNames = append(cNames, fmt.Sprintf("%s=$%d", key, lastPlaceHolderID))
+		values = append(values, val)
+		lastPlaceHolderID += 1
+	}
+
+	return strings.Join(cNames, ","), lastPlaceHolderID, values
 }

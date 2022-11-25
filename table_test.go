@@ -101,3 +101,130 @@ func TestNewCreateTable(t *testing.T) {
 	fmt.Println(all)
 	// ----------------------------------------------------------------------------------
 }
+
+func TestTbl_mapToUpdateQuery(t *testing.T) {
+	db, err := sql.Open("postgres", "user=postgres password=root sslmode=disable database=testapp")
+	if err != nil {
+		panic(err)
+	}
+
+	// ----------------------------------------------------------------------------------
+	tbl := Table[users](db, options.Table().SetInsertOptions(options.Insert().IgnoreFields("id", "created_at")))
+	user, err := tbl.Insert(users{
+		FirstName: "Ali",
+		LastName:  "Error",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	user.LastName = "Error - Modified"
+
+	err = tbl.UpdateByID(user.Id, *user, options.Update().IgnoreFields("created_at"))
+	if err != nil {
+		panic(err)
+	}
+	// type fields struct {
+	// 	name    string
+	// 	db      *sql.DB
+	// 	options *options.TableOptions
+	// }
+	// type args struct {
+	// 	m             map[string]interface{}
+	// 	ignoredFields []string
+	// }
+	// tests := []struct {
+	// 	name            string
+	// 	fields          fields
+	// 	args            args
+	// 	wantColumnNames string
+	// 	wantValues      []interface{}
+	// }{
+	// 	{
+	// 		name: "Successful",
+	// 		fields: fields{
+	// 			name:    "users",
+	// 			db:      nil,
+	// 			options: nil,
+	// 		},
+	// 		args: args{
+	// 			m: map[string]interface{}{
+	// 				"first_name": "Ali",
+	// 			},
+	// 			ignoredFields: nil,
+	// 		},
+	// 		wantColumnNames: "first_name=$1",
+	// 		wantValues:      []interface{}{"Ali"},
+	// 	},
+	// }
+	// for _, tt := range tests {
+	// 	t.Run(tt.name, func(t *testing.T) {
+	// 		c := &Tbl[users]{
+	// 			name:    tt.fields.name,
+	// 			db:      tt.fields.db,
+	// 			options: tt.fields.options,
+	// 		}
+	// 		gotColumnNames, _, gotValues := c.mapToUpdateQuery(tt.args.m, tt.args.ignoredFields...)
+	//
+	// 		if gotColumnNames != tt.wantColumnNames {
+	// 			t.Errorf("mapToUpdateQuery() gotColumnNames = %v, want %v", gotColumnNames, tt.wantColumnNames)
+	// 		}
+	// 		if !reflect.DeepEqual(gotValues, tt.wantValues) {
+	// 			t.Errorf("mapToUpdateQuery() gotValues = %v, want %v", gotValues, tt.wantValues)
+	// 		}
+	// 	})
+	// }
+}
+
+func TestTbl_UpdateByID(t *testing.T) {
+	type fields struct {
+		name    string
+		db      *sql.DB
+		options *options.TableOptions
+	}
+	type args[T any] struct {
+		id   interface{}
+		data T
+	}
+
+	type test[T any] struct {
+		name    string
+		fields  fields
+		args    args[T]
+		wantErr bool
+	}
+
+	u := users{
+		FirstName: "Hamed",
+		LastName:  "",
+		CreatedAt: nil,
+	}
+
+	tests := []test[users]{
+		// TODO: Add test cases.
+		{
+			name: "Successful",
+			fields: fields{
+				name: "users",
+			},
+			args: args[users]{
+				id:   "1",
+				data: u,
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &Tbl[users]{
+				name:    tt.fields.name,
+				db:      tt.fields.db,
+				options: tt.fields.options,
+			}
+			if err := c.UpdateByID(tt.args.id, tt.args.data, options.Update().IgnoreFields("created_at")); (err != nil) != tt.wantErr {
+				t.Errorf("UpdateByID() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
