@@ -1,7 +1,5 @@
 package elegant
 
-import "fmt"
-
 type rawQueryBuilder struct {
 	tableName string
 
@@ -11,7 +9,7 @@ type rawQueryBuilder struct {
 }
 
 func (q *rawQueryBuilder) Query() string {
-	return fmt.Sprintf("(%s)", q.rawQuery)
+	return q.rawQuery
 }
 
 func (q *rawQueryBuilder) Values() []interface{} {
